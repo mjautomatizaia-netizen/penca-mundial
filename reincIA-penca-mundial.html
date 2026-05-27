@@ -1147,21 +1147,109 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+// ═══════════════════════════════════════════════════════
+// FIREBASE IMPORTS & CONFIG
+// ═══════════════════════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile }
+  from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp, getDocs }
+  from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAeakitTuystc5lKtAf6bMashr6vBMfLsI",
+  authDomain: "reincia-penca-mundial-2026.firebaseapp.com",
+  projectId: "reincia-penca-mundial-2026",
+  storageBucket: "reincia-penca-mundial-2026.firebasestorage.app",
+  messagingSenderId: "912384720065",
+  appId: "1:912384720065:web:d2704ea8c34afcafcae840"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+
+// ─── FIREBASE HELPERS ───
+async function fbRegister(name, email, pass) {
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const colors = ['#1E5EBB','#D4AF37','#00C6FF','#4CAF50','#E91E63','#FF9800','#9C27B0','#FF5722'];
+    const color  = colors[Math.floor(Math.random()*colors.length)];
+    await setDoc(doc(db,'users',cred.user.uid), {
+      name, email, role:'participant', avatar:initials, color,
+      pts:0, picks:0, correct:0, champion:'', createdAt:serverTimestamp()
+    });
+    return { ok:true };
+  } catch(e) {
+    const msg = e.code==='auth/email-already-in-use' ? 'Ese email ya está registrado'
+              : e.code==='auth/weak-password' ? 'Contraseña muy corta (mínimo 6)' : e.message;
+    showNotif('❌', msg); return { ok:false };
+  }
+}
+async function fbLogin(email, pass) {
+  try {
+    await signInWithEmailAndPassword(auth, email, pass); return { ok:true };
+  } catch(e) {
+    showNotif('❌','Email o contraseña incorrectos'); return { ok:false };
+  }
+}
+async function loadUserProfile(uid) {
+  const snap = await getDoc(doc(db,'users',uid));
+  return snap.exists() ? { uid, ...snap.data() } : null;
+}
+async function loadMyPredictions(uid) {
+  const snaps = await getDocs(collection(db,`predictions/${uid}/matches`));
+  const preds = {}; snaps.forEach(d => { preds[d.id] = d.data(); }); return preds;
+}
+function listenRanking(cb) {
+  return onSnapshot(query(collection(db,'users'), orderBy('pts','desc')), snap => {
+    const u=[]; snap.forEach(d=>u.push({uid:d.id,...d.data()})); cb(u);
+  });
+}
+function listenChat(cb) {
+  return onSnapshot(query(collection(db,'chat'), orderBy('createdAt','asc')), snap => {
+    const m=[]; snap.forEach(d=>m.push({id:d.id,...d.data()})); cb(m);
+  });
+}
+function listenResults(cb) {
+  return onSnapshot(collection(db,'results'), snap => {
+    const r={}; snap.forEach(d=>{r[d.id]=d.data();}); cb(r);
+  });
+}
+
+// ─── AUTH STATE OBSERVER ───
+onAuthStateChanged(auth, async fbUser => {
+  if (fbUser) {
+    const profile = await loadUserProfile(fbUser.uid);
+    if (profile) {
+      currentUser = profile;
+      userPredictions = await loadMyPredictions(fbUser.uid);
+      // Start real-time listeners
+      listenRanking(users => { liveUsers = users; buildRanking(); buildHome(); });
+      listenChat(msgs  => { liveMsgs  = msgs;  if(currentPage==='chat') buildChat(); else { document.getElementById('chatBadge').style.display='flex'; } });
+      listenResults(results => { liveResults = results; syncResults(); });
+      enterApp();
+    }
+  } else {
+    document.getElementById('screen-app').classList.remove('active');
+    document.getElementById('screen-login').classList.add('active');
+    document.getElementById('loader').classList.add('hidden');
+  }
+});
+
 // ═══════════════════════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════════════════════
+// USERS now live in Firestore — liveUsers is populated by listener
+let liveUsers = [];
+let liveMsgs  = [];
+let liveResults = {};
+let currentPage = 'home';
 
-const USERS = [
-  { id:1, name:'Miguel Jorge', email:'admin@penca.com', pass:'admin123', role:'admin', avatar:'MJ', color:'#1E5EBB', pts:142, picks:22, correct:18 },
-  { id:2, name:'Sebastián R.', email:'seba@penca.com', pass:'pass123', role:'participant', avatar:'SR', color:'#D4AF37', pts:128, picks:22, correct:16 },
-  { id:3, name:'Laura M.', email:'laura@penca.com', pass:'pass123', role:'participant', avatar:'LM', color:'#00C6FF', pts:115, picks:20, correct:14 },
-  { id:4, name:'Pablo V.',  email:'pablo@penca.com', pass:'pass123', role:'participant', avatar:'PV', color:'#4CAF50', pts:98,  picks:19, correct:12 },
-  { id:5, name:'Ana G.',   email:'ana@penca.com',   pass:'pass123', role:'participant', avatar:'AG', color:'#E91E63', pts:87,  picks:18, correct:11 },
-  { id:6, name:'Rodrigo F.',email:'rodri@penca.com', pass:'pass123', role:'participant', avatar:'RF', color:'#FF9800', pts:76,  picks:17, correct:9 },
-  { id:7, name:'Valentina P.',email:'vale@penca.com',pass:'pass123', role:'participant', avatar:'VP', color:'#9C27B0', pts:65,  picks:15, correct:8 },
-  { id:8, name:'Carlos H.', email:'carlos@penca.com',pass:'pass123', role:'participant', avatar:'CH', color:'#FF5722', pts:54,  picks:14, correct:7 }
-];
+// Compat alias so existing code that uses USERS still works
+const USERS = new Proxy([], { get(t,p) { return p in liveUsers ? liveUsers[p] : liveUsers[p] ?? t[p]; } });
 
 const TEAMS = [
   {name:'Argentina', flag:'🇦🇷'},{name:'Brasil',   flag:'🇧🇷'},
@@ -1242,63 +1330,61 @@ function switchAuthTab(tab) {
   document.getElementById('registerForm').style.display = tab==='register' ? 'block' : 'none';
 }
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPassword').value.trim();
-  const user  = USERS.find(u => u.email === email && u.pass === pass);
-  if (!user) { showNotif('❌','Email o contraseña incorrectos'); return; }
-  loginAs(user);
+  if (!email || !pass) { showNotif('⚠️','Completá email y contraseña'); return; }
+  document.querySelector('#loginForm .btn-primary').textContent = 'ENTRANDO...';
+  await fbLogin(email, pass);
+  document.querySelector('#loginForm .btn-primary').textContent = 'ENTRAR AL MUNDIAL';
 }
 
-function doRegister() {
+async function doRegister() {
   const name  = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim();
   const pass  = document.getElementById('regPassword').value.trim();
-  if (!name || !email || pass.length < 6) { showNotif('⚠️','Completá todos los campos'); return; }
-  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  const newUser = { id: USERS.length+1, name, email, pass, role:'participant',
-    avatar: initials, color: '#1E5EBB', pts:0, picks:0, correct:0 };
-  USERS.push(newUser);
-  loginAs(newUser);
+  if (!name || !email || pass.length < 6) { showNotif('⚠️','Completá todos los campos (mínimo 6 caracteres en contraseña)'); return; }
+  document.querySelector('#registerForm .btn-primary').textContent = 'CREANDO...';
+  const res = await fbRegister(name, email, pass);
+  document.querySelector('#registerForm .btn-primary').textContent = 'CREAR CUENTA';
+  if (!res.ok) return;
 }
 
 function enterAsGuest() {
-  loginAs({ id:0, name:'Invitado', email:'', role:'guest', avatar:'👁', color:'#555', pts:0, picks:0, correct:0 });
+  currentUser = { uid:'guest', name:'Invitado', email:'', role:'guest', avatar:'👁', color:'#555', pts:0, picks:0, correct:0 };
+  enterApp();
 }
 
-function loginAs(user) {
-  currentUser = user;
+function enterApp() {
+  const user = currentUser;
   document.getElementById('topAvatar').textContent = user.avatar;
   document.getElementById('topAvatar').style.background = user.color || '#1E5EBB';
   document.getElementById('topName').textContent = user.name.split(' ')[0];
   const roleBadge = document.getElementById('topRole');
-  roleBadge.textContent = user.role === 'admin' ? 'ADMIN' : user.role === 'guest' ? 'INVITADO' : 'JUGADOR';
-  roleBadge.className = 'role-badge ' + (user.role === 'admin' ? 'admin' : 'participant');
-  if (user.role === 'admin') document.getElementById('nav-admin').style.display = 'flex';
-  else document.getElementById('nav-admin').style.display = 'none';
-
+  roleBadge.textContent = user.role==='admin' ? 'ADMIN' : user.role==='guest' ? 'INVITADO' : 'JUGADOR';
+  roleBadge.className = 'role-badge ' + (user.role==='admin' ? 'admin' : 'participant');
+  document.getElementById('nav-admin').style.display = user.role==='admin' ? 'flex' : 'none';
   document.getElementById('screen-login').classList.remove('active');
   document.getElementById('screen-app').classList.add('active');
-
-  buildHome();
-  buildMatches();
-  buildRanking();
-  buildChat();
-  buildAdmin();
-
+  document.getElementById('loader').classList.add('hidden');
+  buildHome(); buildMatches(); buildRanking(); buildChat(); buildAdmin();
   showNotif('👋', `Bienvenido ${user.name.split(' ')[0]}!`);
 }
+
+// Keep loginAs as alias for compatibility
+const loginAs = enterApp;
 
 // ═══════════════════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════════════════
 
 function showPage(name) {
+  currentPage = name;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name)?.classList.add('active');
   document.getElementById('nav-'+name)?.classList.add('active');
-  if (name === 'chat') document.getElementById('chatBadge').style.display = 'none';
+  if (name === 'chat') { document.getElementById('chatBadge').style.display = 'none'; buildChat(); }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1347,6 +1433,9 @@ function pickChampion(name, el) {
   document.querySelectorAll('#championTeams .champ-team').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
   CHAMPION_PICKS[currentUser.id] = name;
+  if (currentUser?.uid && currentUser.uid !== 'guest') {
+    updateDoc(doc(db,'users',currentUser.uid), { champion: name }).catch(()=>{});
+  }
   showNotif('🏆',`¡Elegiste ${name} como campeón!`);
 }
 
@@ -1471,13 +1560,26 @@ function updateScoreDisplay() {
   document.getElementById('scoreB').textContent = pickedScores[1];
 }
 
-function savePrediction() {
+async function savePrediction() {
   if (!currentPickMatch) return;
-  userPredictions[currentPickMatch.id] = { h: pickedScores[0], a: pickedScores[1] };
+  if (currentUser?.role === 'guest') { showNotif('👁','Registrate para guardar picks'); return; }
+  const h = pickedScores[0], a = pickedScores[1];
+  userPredictions[String(currentPickMatch.id)] = { h, a };
+  // Save to Firestore
+  if (currentUser?.uid && currentUser.uid !== 'guest') {
+    try {
+      await setDoc(doc(db, `predictions/${currentUser.uid}/matches`, String(currentPickMatch.id)), {
+        h, a, matchId: currentPickMatch.id, savedAt: serverTimestamp()
+      });
+      // Update picks count in user doc
+      const newPicks = Object.keys(userPredictions).length;
+      await updateDoc(doc(db,'users',currentUser.uid), { picks: newPicks });
+    } catch(e) { showNotif('⚠️','Error al guardar en la nube: '+e.message); }
+  }
   closePredictModal();
-  buildMatches();
-  buildHome();
-  showNotif('✅', `Predicción guardada: ${pickedScores[0]}−${pickedScores[1]}`);
+  buildMatches(); buildHome();
+  showNotif('✅', `Pick guardado: ${pickedScores[0]}−${pickedScores[1]} ✓ Nube`);
+  playSound('save');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1485,7 +1587,7 @@ function savePrediction() {
 // ═══════════════════════════════════════════════════════
 
 function buildRanking() {
-  const sorted = [...USERS].sort((a,b) => b.pts - a.pts);
+  const sorted = liveUsers.length > 0 ? [...liveUsers].sort((a,b)=>b.pts-a.pts) : [...USERS].sort((a,b)=>b.pts-a.pts);
   const table  = document.getElementById('rankingTable');
   table.innerHTML = '';
   sorted.forEach((u, i) => {
@@ -1560,22 +1662,23 @@ function shareRanking() {
 
 function buildChat() {
   const cont = document.getElementById('chatMessages');
+  const msgs = liveMsgs.length > 0 ? liveMsgs : CHAT_MESSAGES;
   cont.innerHTML = '';
-  CHAT_MESSAGES.forEach(msg => {
-    const user = USERS.find(u => u.id === msg.user);
-    if (!user) return;
-    const isOwn = currentUser && msg.user === currentUser.id;
-    const reactionHtml = msg.reactions.map(r =>
-      `<span class="emoji-pill">${r}</span>`).join('');
-
+  msgs.forEach(msg => {
+    const isOwn = currentUser && (msg.uid === currentUser.uid || msg.user === currentUser.id);
+    const avatar = msg.avatar || '?';
+    const color  = msg.color  || '#1E5EBB';
+    const name   = msg.userName || msg.name || 'Usuario';
+    const time   = msg.time || (msg.createdAt?.toDate ? msg.createdAt.toDate().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) : '');
+    const reactionHtml = (msg.reactions||[]).map(r=>`<span class="emoji-pill">${r}</span>`).join('');
     cont.innerHTML += `
       <div class="chat-msg ${isOwn?'own':''}">
-        <div class="chat-avatar" style="background:${user.color}">${user.avatar}</div>
+        <div class="chat-avatar" style="background:${color}">${avatar}</div>
         <div>
-          ${!isOwn ? `<div class="chat-name">${user.name.split(' ')[0]}</div>` : ''}
+          ${!isOwn ? `<div class="chat-name">${name.split(' ')[0]}</div>` : ''}
           <div class="chat-bubble">${msg.text}</div>
           <div class="emoji-reactions">${reactionHtml}</div>
-          <div class="chat-time">${msg.time}</div>
+          <div class="chat-time">${time}</div>
         </div>
       </div>`;
   });
@@ -1586,17 +1689,29 @@ function chatKeypress(e) {
   if (e.key === 'Enter') sendMessage();
 }
 
-function sendMessage() {
+async function sendMessage() {
   if (currentUser?.role === 'guest') { showNotif('👁','Registrate para chatear'); return; }
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text) return;
-
-  const now = new Date();
-  const time = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-  CHAT_MESSAGES.push({ user: currentUser.id, text, time, reactions:[] });
   input.value = '';
-  buildChat();
+  if (currentUser?.uid && currentUser.uid !== 'guest') {
+    try {
+      await addDoc(collection(db,'chat'), {
+        uid: currentUser.uid,
+        userName: currentUser.name,
+        avatar: currentUser.avatar,
+        color: currentUser.color,
+        text, reactions:[], createdAt: serverTimestamp()
+      });
+    } catch(e) {
+      // Fallback local
+      const now = new Date();
+      const time = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      CHAT_MESSAGES.push({ uid:currentUser.uid, userName:currentUser.name, avatar:currentUser.avatar, color:currentUser.color, text, time, reactions:[] });
+      buildChat();
+    }
+  }
 }
 
 function addReaction(emoji) {
@@ -1647,15 +1762,56 @@ function buildAdmin() {
   });
 }
 
-function saveResult(matchId) {
+async function saveResult(matchId) {
+  if (currentUser?.role !== 'admin') { showNotif('❌','Solo el admin puede cargar resultados'); return; }
   const m = MATCHES.find(x => x.id === matchId);
   if (!m) return;
   const sh = parseInt(document.getElementById('sh_'+matchId).value);
   const sa = parseInt(document.getElementById('sa_'+matchId).value);
   if (isNaN(sh) || isNaN(sa)) { showNotif('⚠️','Ingresá ambos scores'); return; }
   m.scoreH = sh; m.scoreA = sa; m.status = 'finished';
-  showNotif('✅',`Resultado guardado: ${m.home} ${sh}−${sa} ${m.away}`);
-  buildMatches(); buildHome(); buildRanking();
+  // Save to Firestore
+  try {
+    await setDoc(doc(db,'results',String(matchId)), {
+      matchId, scoreH:sh, scoreA:sa, status:'finished', updatedAt:serverTimestamp()
+    });
+    // Recalculate points for all users who predicted this match
+    await recalcAndSavePoints();
+    showNotif('✅',`✓ Nube — ${m.home} ${sh}−${sa} ${m.away}`);
+  } catch(e) {
+    showNotif('⚠️','Guardado local solo: '+e.message);
+  }
+  buildMatches(); buildHome(); buildRanking(); buildAdmin();
+}
+
+async function recalcAndSavePoints() {
+  // For each user in liveUsers, recalc their points from all finished matches
+  for (const u of liveUsers) {
+    if (!u.uid) continue;
+    try {
+      const pSnaps = await getDocs(collection(db,`predictions/${u.uid}/matches`));
+      let pts=0, correct=0, picks=0;
+      pSnaps.forEach(d => {
+        picks++;
+        const pick = d.data();
+        const m = MATCHES.find(x => String(x.id) === d.id);
+        if (!m || m.status !== 'finished') return;
+        const p = calcPts(m, pick);
+        pts += p;
+        if (p >= 3) correct++;
+      });
+      await updateDoc(doc(db,'users',u.uid), { pts, correct, picks });
+    } catch(e) { /* skip user */ }
+  }
+}
+
+function syncResults() {
+  // Apply Firestore results to local MATCHES array
+  Object.entries(liveResults).forEach(([id, r]) => {
+    const m = MATCHES.find(x => String(x.id) === id);
+    if (m) { m.scoreH = r.scoreH; m.scoreA = r.scoreA; m.status = r.status || 'finished'; }
+  });
+  buildMatches(); buildHome();
 }
 
 function confirmReset() {
@@ -1956,8 +2112,10 @@ function changeAvatar() {
   playSound('save');
 }
 
-function doLogout() {
+async function doLogout() {
+  try { await signOut(auth); } catch(e) {}
   currentUser = null;
+  liveUsers = []; liveMsgs = []; liveResults = {};
   document.getElementById('screen-app').classList.remove('active');
   document.getElementById('screen-login').classList.add('active');
   document.getElementById('loginEmail').value = '';
