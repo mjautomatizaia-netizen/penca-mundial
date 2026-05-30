@@ -2023,7 +2023,7 @@ async function askIA(userText) {
   cont.scrollTop = cont.scrollHeight;
 
   try {
-    const resp = await fetch('https://penca-mundial-2026.netlify.app/.netlify/functions/gemini', {
+    const resp = await fetch('https://penca-mundial-2026b.netlif/.netlify/functions/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: question || 'Hola' })
