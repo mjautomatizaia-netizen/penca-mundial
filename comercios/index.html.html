@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReinicIA Penca Mundial 2026 · Para tu Negocio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #D4AF37;
+  --gold-light: #F2D06B;
+  --gold-dark: #A08620;
+  --blue: #0A2240;
+  --blue-mid: #1A3F6F;
+  --cyan: #00C6FF;
+  --white: #F8F9FA;
+  --gray: #8A9BB0;
+  --green: #25D366;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family:'Rajdhani',sans-serif; background:var(--blue); color:var(--white); overflow-x:hidden; }
+
+.bg-fixed {
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:linear-gradient(160deg,#060F1E 0%,#0A2240 50%,#060F1E 100%);
+}
+.bg-fixed::before {
+  content:''; position:absolute; inset:0;
+  background-image:linear-gradient(rgba(255,255,255,0.012) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,0.012) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.bg-fixed::after {
+  content:''; position:absolute; width:600px; height:600px; top:-100px; right:-150px;
+  background:radial-gradient(circle,rgba(212,175,55,0.06) 0%,transparent 70%);
+  border-radius:50%; animation:pulse 6s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+.wrap { position:relative; z-index:1; }
+
+/* TOPBAR */
+.topbar {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 24px;
+  background:rgba(6,15,30,0.92); backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(212,175,55,0.15);
+  transform:translateY(-100%); transition:transform 0.4s ease;
+}
+.topbar.visible{transform:translateY(0);}
+.topbar-brand{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--gold);}
+.topbar-btn {
+  background:var(--gold); color:var(--blue);
+  font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:2px;
+  padding:8px 18px; border-radius:8px; text-decoration:none; transition:all 0.3s;
+}
+.topbar-btn:hover{background:var(--gold-light);}
+
+/* HERO */
+.hero {
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:40px 24px; text-align:center; position:relative; overflow:hidden;
+}
+.hero::before {
+  content:'⚽'; position:absolute; font-size:420px; opacity:0.025;
+  top:50%; left:50%; transform:translate(-50%,-50%);
+  animation:spin-slow 40s linear infinite; pointer-events:none;
+}
+@keyframes spin-slow{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.3);
+  border-radius:30px; padding:8px 20px;
+  font-size:12px; font-weight:700; letter-spacing:2px;
+  color:var(--gold); margin-bottom:16px;
+  animation:fadeDown 0.8s ease both;
+}
+.negocio-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.25);
+  border-radius:30px; padding:7px 18px;
+  font-size:12px; font-weight:700; letter-spacing:2px;
+  color:var(--green); margin-bottom:28px;
+  animation:fadeDown 0.85s ease both 0.1s;
+}
+.hero-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(48px,13vw,88px); letter-spacing:6px; line-height:0.95;
+  background:linear-gradient(135deg,var(--white) 0%,var(--gold-light) 50%,var(--gold) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:16px; animation:fadeUp 1s ease both 0.2s;
+}
+.hero-sub {
+  font-size:15px; letter-spacing:3px; color:var(--gray);
+  margin-bottom:14px; animation:fadeUp 1s ease both 0.3s;
+}
+.hero-hook {
+  font-size:18px; color:var(--white); font-weight:600;
+  margin-bottom:36px; line-height:1.5;
+  animation:fadeUp 1s ease both 0.4s;
+}
+.hero-hook span { color:var(--gold); }
+
+.hero-cta {
+  display:inline-flex; align-items:center; gap:10px;
+  background:linear-gradient(135deg,var(--gold-dark),var(--gold),var(--gold-light));
+  border:none; border-radius:14px; padding:18px 40px;
+  color:var(--blue); font-family:'Bebas Neue',sans-serif;
+  font-size:20px; letter-spacing:3px; cursor:pointer; text-decoration:none;
+  transition:all 0.3s; box-shadow:0 8px 30px rgba(212,175,55,0.3);
+  animation:fadeUp 1s ease both 0.5s;
+}
+.hero-cta:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(212,175,55,0.5);}
+
+.hero-scroll {
+  position:absolute; bottom:32px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  color:var(--gray); font-size:11px; letter-spacing:2px;
+  animation:fadeUp 1s ease both 1s;
+}
+.scroll-arrow {
+  width:20px; height:20px; border-right:2px solid var(--gray); border-bottom:2px solid var(--gray);
+  transform:rotate(45deg); animation:bounce-arrow 1.5s ease-in-out infinite;
+}
+@keyframes bounce-arrow{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(5px)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.2),transparent);margin:0 24px;}
+
+section{padding:80px 24px;max-width:680px;margin:0 auto;}
+
+.section-label {
+  font-size:11px; letter-spacing:3px; color:var(--gold);
+  font-weight:700; margin-bottom:12px;
+  display:flex; align-items:center; gap:10px;
+}
+.section-label::before{content:'';width:30px;height:2px;background:linear-gradient(90deg,var(--gold),transparent);}
+.section-title {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(32px,8vw,48px); letter-spacing:3px; line-height:1; margin-bottom:20px;
+}
+.section-title span{color:var(--gold);}
+.section-desc{font-size:16px;color:var(--gray);line-height:1.7;margin-bottom:40px;}
+
+/* PROBLEMA/SOLUCIÓN */
+.problema-grid{display:flex;flex-direction:column;gap:14px;}
+.problema-card {
+  display:flex; gap:18px; align-items:flex-start;
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+  border-radius:16px; padding:22px;
+  opacity:0; transform:translateY(20px); transition:all 0.4s;
+}
+.problema-card.visible{opacity:1;transform:translateY(0);}
+.problema-card:hover{background:rgba(212,175,55,0.05);border-color:rgba(212,175,55,0.2);}
+.problema-icon{font-size:28px;flex-shrink:0;margin-top:2px;}
+.problema-content h3{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:1.5px;margin-bottom:6px;}
+.problema-content p{font-size:14px;color:var(--gray);line-height:1.6;}
+
+/* QUÉ ES */
+.que-es-card {
+  background:rgba(0,198,255,0.04); border:1px solid rgba(0,198,255,0.18);
+  border-radius:20px; padding:32px 28px; margin-bottom:28px;
+  opacity:0; transform:translateY(20px); transition:all 0.5s;
+}
+.que-es-card.visible{opacity:1;transform:translateY(0);}
+.que-es-label{font-size:11px;letter-spacing:3px;color:var(--cyan);font-weight:700;margin-bottom:10px;}
+.que-es-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:12px;}
+.que-es-text{font-size:15px;color:var(--gray);line-height:1.7;}
+.que-es-text strong{color:var(--white);}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;}
+@media(max-width:480px){.features-grid{grid-template-columns:1fr;}}
+.feat-card {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+  border-radius:14px; padding:22px 20px; transition:all 0.3s;
+  opacity:0; transform:translateY(20px);
+}
+.feat-card.visible{opacity:1;transform:translateY(0);}
+.feat-card:hover{background:rgba(212,175,55,0.05);border-color:rgba(212,175,55,0.2);transform:translateY(-3px);}
+.feat-icon{font-size:32px;margin-bottom:12px;}
+.feat-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1.5px;margin-bottom:6px;}
+.feat-desc{font-size:13px;color:var(--gray);line-height:1.5;}
+
+/* NICHOS */
+.nicho-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:480px){.nicho-grid{grid-template-columns:1fr;}}
+.nicho-item {
+  display:flex; align-items:center; gap:12px;
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px; padding:14px 16px; font-size:14px; color:var(--gray);
+  opacity:0; transform:translateY(14px); transition:all 0.35s;
+}
+.nicho-item.visible{opacity:1;transform:translateY(0);}
+.nicho-item span{font-size:20px;}
+
+/* PLANES */
+.planes-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:500px){.planes-grid{grid-template-columns:1fr;}}
+
+.plan-card {
+  border-radius:20px; padding:28px 24px;
+  opacity:0; transform:translateY(20px); transition:all 0.5s;
+  position:relative; overflow:hidden;
+}
+.plan-card.visible{opacity:1;transform:translateY(0);}
+
+.plan-basica {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.1);
+}
+.plan-premium {
+  background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.03));
+  border:1px solid rgba(212,175,55,0.35);
+}
+.plan-premium::before {
+  content:'★ MÁS ELEGIDO';
+  position:absolute; top:14px; right:-28px;
+  background:var(--gold); color:var(--blue);
+  font-family:'Bebas Neue',sans-serif; font-size:11px; letter-spacing:1.5px;
+  padding:4px 40px; transform:rotate(45deg);
+}
+.plan-label{font-size:11px;letter-spacing:3px;color:var(--gray);font-weight:700;margin-bottom:8px;}
+.plan-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:4px;}
+.plan-price {
+  font-family:'Bebas Neue',sans-serif;
+  font-size:56px; line-height:1;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:4px;
+}
+.plan-period{font-size:12px;color:var(--gray);letter-spacing:1px;margin-bottom:20px;}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--gray);line-height:1.4;}
+.plan-features li::before{content:'✓';color:var(--gold);font-weight:700;flex-shrink:0;margin-top:1px;}
+.plan-features li.no{color:#4A5568;}
+.plan-features li.no::before{content:'✗';color:#4A5568;}
+
+/* CÓMO FUNCIONA PARA EL NEGOCIO */
+.steps{display:flex;flex-direction:column;gap:20px;}
+.step {
+  display:flex; gap:20px; align-items:flex-start;
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
+  border-radius:16px; padding:24px; transition:all 0.3s;
+  opacity:0; transform:translateY(20px);
+}
+.step.visible{opacity:1;transform:translateY(0);}
+.step:hover{background:rgba(212,175,55,0.05);border-color:rgba(212,175,55,0.2);}
+.step-num{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;color:var(--gold);opacity:0.4;flex-shrink:0;width:44px;}
+.step-content h3{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:6px;}
+.step-content p{font-size:14px;color:var(--gray);line-height:1.6;}
+.step-icon{font-size:28px;flex-shrink:0;margin-top:2px;}
+
+/* CTA FINAL */
+.cta-section{padding:80px 24px;text-align:center;max-width:680px;margin:0 auto;}
+.cta-sub{font-size:16px;color:var(--gray);margin-bottom:32px;line-height:1.6;}
+.cta-sub strong{color:var(--white);}
+.cta-btn {
+  display:inline-flex; align-items:center; gap:12px;
+  background:linear-gradient(135deg,#128C7E,#25D366);
+  color:#fff; font-family:'Bebas Neue',sans-serif;
+  font-size:20px; letter-spacing:3px;
+  padding:18px 44px; border-radius:14px;
+  text-decoration:none; transition:all 0.3s;
+  box-shadow:0 8px 30px rgba(37,211,102,0.3); margin-bottom:16px;
+  display:flex; align-items:center; gap:12px; justify-content:center;
+}
+.cta-btn:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(37,211,102,0.5);}
+.cta-tagline{font-size:14px;color:var(--gray);line-height:1.7;margin-top:24px;}
+
+footer{text-align:center;padding:40px 24px;font-size:12px;color:#4A5568;letter-spacing:1px;border-top:1px solid rgba(255,255,255,0.05);}
+</style>
+</head>
+<body>
+<div class="bg-fixed"></div>
+
+<div class="topbar" id="topbar">
+  <div class="topbar-brand">⚽ PENCA MUNDIAL · PARA TU NEGOCIO</div>
+  <a href="https://wa.me/59892161241?text=Hola%20Miguel%2C%20quiero%20info%20sobre%20la%20Penca%20para%20mi%20negocio%20%F0%9F%8F%86" target="_blank" class="topbar-btn">QUIERO SABER MÁS</a>
+</div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">⚽ MUNDIAL USA · CANADÁ · MÉXICO 2026</div>
+    <div class="negocio-badge">🏪 SOLUCIÓN PARA COMERCIOS Y NEGOCIOS</div>
+    <div class="hero-title">TUS CLIENTES<br>VUELVEN<br>SOLOS</div>
+    <div class="hero-sub">FIDELIZACIÓN · ENGAGEMENT · COMUNIDAD</div>
+    <div class="hero-hook">Una penca del Mundial <span>con tu logo y tus colores</span>,<br>activa durante 2 meses enteros.</div>
+    <a href="https://wa.me/59892161241?text=Hola%20Miguel%2C%20quiero%20info%20sobre%20la%20Penca%20para%20mi%20negocio%20%F0%9F%8F%86" target="_blank" class="hero-cta">
+      📲 QUIERO SABER MÁS
+    </a>
+    <div class="hero-scroll"><div class="scroll-arrow"></div>VER MÁS</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- EL PROBLEMA -->
+  <section>
+    <div class="section-label">EL CONTEXTO</div>
+    <div class="section-title">¿QUÉ PASA <span>HOY</span> CON TUS CLIENTES?</div>
+    <div class="section-desc">El Mundial dura 2 meses. Tu negocio puede sacarle el máximo provecho — o dejarlo pasar.</div>
+
+    <div class="problema-grid">
+      <div class="problema-card">
+        <div class="problema-icon">😴</div>
+        <div class="problema-content">
+          <h3>LOS CLIENTES NO VUELVEN SOLOS</h3>
+          <p>Sin un motivo concreto para volver, el cliente te olvida. El Mundial es ese motivo — si lo usás bien.</p>
+        </div>
+      </div>
+      <div class="problema-card">
+        <div class="problema-icon">📣</div>
+        <div class="problema-content">
+          <h3>LA PUBLICIDAD ES CARA Y FRÍA</h3>
+          <p>Un post no genera comunidad. Una penca sí — tu cliente habla con otros clientes adentro de tu plataforma.</p>
+        </div>
+      </div>
+      <div class="problema-card">
+        <div class="problema-icon">🏆</div>
+        <div class="problema-content">
+          <h3>EL MUNDIAL ES UNA OPORTUNIDAD</h3>
+          <p>Dos meses de conversaciones, predicciones y emoción. Todo con tu nombre y tu logo adelante.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- QUÉ ES -->
+  <section>
+    <div class="section-label">LA SOLUCIÓN</div>
+    <div class="section-title">TU PENCA <span>PERSONALIZADA</span></div>
+
+    <div class="que-es-card">
+      <div class="que-es-label">💡 QUÉ ES EXACTAMENTE</div>
+      <div class="que-es-title">UNA APP DE PENCA CON TU IDENTIDAD</div>
+      <div class="que-es-text">
+        Es una plataforma digital completa para que tus clientes compitan prediciendo los partidos del Mundial. <strong>Lleva tu logo, tus colores y el nombre de tu negocio.</strong> Tus clientes la usan desde el celular sin instalar nada. Vos la usás para acercarte a ellos, premiarlos y mantenerlos activos durante toda la Copa del Mundo.
+      </div>
+    </div>
+
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🎨</div>
+        <div class="feat-title">TU LOGO Y COLORES</div>
+        <div class="feat-desc">La app lleva tu identidad visual. Tus clientes la ven como una herramienta de tu negocio.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">RANKING EN VIVO</div>
+        <div class="feat-desc">Tus clientes compiten entre sí. El ranking se actualiza solo — sin que hagas nada.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💬</div>
+        <div class="feat-title">CHAT INTERNO</div>
+        <div class="feat-desc">Tus clientes hablan entre ellos adentro de tu plataforma. Comunidad real, no solo seguidores.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-title">EXPERTO IA</div>
+        <div class="feat-desc">Análisis tácticos de cada partido con inteligencia artificial. Disponible desde el 9 de junio.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🏆</div>
+        <div class="feat-title">VOS DEFINÍS LOS PREMIOS</div>
+        <div class="feat-desc">Un descuento, un producto, una experiencia. Vos decidís qué premiar — nosotros ponemos la plataforma.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📲</div>
+        <div class="feat-title">SIN INSTALAR NADA</div>
+        <div class="feat-desc">Funciona directo desde el celular. Tus clientes entran con un link o escaneando un QR.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PARA QUIÉN -->
+  <section>
+    <div class="section-label">PARA QUIÉN ES</div>
+    <div class="section-title">FUNCIONA PARA <span>CUALQUIER</span> NEGOCIO</div>
+    <div class="section-desc">Si tenés clientes que vuelven, esto te sirve.</div>
+    <div class="nicho-grid">
+      <div class="nicho-item"><span>🍕</span> Pizzerías y restaurantes</div>
+      <div class="nicho-item"><span>🏋️</span> Gimnasios y fitness</div>
+      <div class="nicho-item"><span>💈</span> Barberías y peluquerías</div>
+      <div class="nicho-item"><span>🐾</span> Veterinarias</div>
+      <div class="nicho-item"><span>🚲</span> Bicicleterías</div>
+      <div class="nicho-item"><span>🏠</span> Inmobiliarias</div>
+      <div class="nicho-item"><span>🔧</span> Servicios técnicos</div>
+      <div class="nicho-item"><span>💅</span> Estética y belleza</div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CÓMO FUNCIONA PARA EL NEGOCIO -->
+  <section>
+    <div class="section-label">EL PROCESO</div>
+    <div class="section-title">EN <span>48 HORAS</span> ESTÁ LISTA</div>
+    <div class="section-desc">No necesitás saber nada de tecnología. Nosotros hacemos todo.</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-icon">📲</div>
+        <div class="step-content">
+          <h3>NOS CONTACTÁS</h3>
+          <p>Me escribís por WhatsApp. Hablamos 15 minutos para entender tu negocio y qué querés lograr.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-icon">🎨</div>
+        <div class="step-content">
+          <h3>PERSONALIZAMOS TU APP</h3>
+          <p>Ponemos tu logo, tus colores y el nombre de tu negocio. En 48 horas tenés tu penca lista.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-icon">🚀</div>
+        <div class="step-content">
+          <h3>LA LANZÁS CON TUS CLIENTES</h3>
+          <p>Compartís el link por WhatsApp, redes o con un QR en tu local. Tus clientes entran y empiezan a jugar.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-icon">🏆</div>
+        <div class="step-content">
+          <h3>PREMIÁS AL GANADOR</h3>
+          <p>Al final del Mundial, el ranking decide. Vos elegís el premio. Tus clientes lo recuerdan por meses.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- PLANES -->
+  <section>
+    <div class="section-label">INVERSIÓN</div>
+    <div class="section-title">DOS <span>PLANES</span> SIMPLES</div>
+    <div class="section-desc">Precio de lanzamiento. Oferta especial para los primeros negocios.</div>
+
+    <div class="planes-grid">
+      <div class="plan-card plan-basica">
+        <div class="plan-label">PLAN</div>
+        <div class="plan-name">BÁSICO</div>
+        <div class="plan-price">20<span style="font-size:24px;color:var(--gray)"> U$S</span></div>
+        <div class="plan-period">PAGO ÚNICO · TODO EL MUNDIAL</div>
+        <ul class="plan-features">
+          <li>Tu logo y colores</li>
+          <li>Hosting incluido 2 meses</li>
+          <li>Hasta 50 participantes</li>
+          <li>Fixture completo 104 partidos</li>
+          <li>Ranking en tiempo real</li>
+          <li class="no">Chat @IA con Gemini</li>
+          <li class="no">Participantes ilimitados</li>
+          <li class="no">Soporte durante el torneo</li>
+        </ul>
+      </div>
+      <div class="plan-card plan-premium">
+        <div class="plan-label">PLAN</div>
+        <div class="plan-name">PREMIUM</div>
+        <div class="plan-price">35<span style="font-size:24px;color:var(--gray)"> U$S</span></div>
+        <div class="plan-period">PAGO ÚNICO · TODO EL MUNDIAL</div>
+        <ul class="plan-features">
+          <li>Todo lo del plan Básico</li>
+          <li>Chat @IA con Gemini</li>
+          <li>Participantes ilimitados</li>
+          <li>Soporte durante el torneo</li>
+          <li>Notificaciones 30 min antes</li>
+          <li>Panel de administración</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CTA FINAL -->
+  <div class="cta-section">
+    <div class="section-label" style="justify-content:center">CONTACTO DIRECTO</div>
+    <div class="section-title" style="font-size:clamp(36px,10vw,64px);text-align:center;margin-bottom:16px">
+      HABLEMOS <span style="color:var(--gold)">HOY</span>
+    </div>
+    <div class="cta-sub">
+      El Mundial arranca pronto. <strong>Los primeros negocios en sumarse tienen ventaja.</strong><br>
+      Escribime y en 15 minutos sabés si esto es para vos.
+    </div>
+    <a href="https://wa.me/59892161241?text=Hola%20Miguel%2C%20quiero%20info%20sobre%20la%20Penca%20para%20mi%20negocio%20%F0%9F%8F%86" target="_blank" class="cta-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      ESCRIBIME POR WHATSAPP
+    </a>
+    <div class="cta-tagline">
+      <strong>Miguel Jorge · ReinicIA</strong><br>
+      Consultor de digitalización · Maldonado, Uruguay · 092 161 241
+    </div>
+  </div>
+
+  <footer>© 2026 ReinicIA · Miguel Jorge · Maldonado, Uruguay · reiniciamj.uy@gmail.com · 092 161 241</footer>
+</div>
+
+<script>
+const topbar = document.getElementById('topbar');
+window.addEventListener('scroll',()=>{ topbar.classList.toggle('visible',window.scrollY>80); });
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach((entry,i)=>{
+    if(entry.isIntersecting){
+      setTimeout(()=>entry.target.classList.add('visible'),i*80);
+      observer.unobserve(entry.target);
+    }
+  });
+},{threshold:0.1});
+document.querySelectorAll('.step,.feat-card,.nicho-item,.problema-card,.que-es-card,.plan-card').forEach(el=>observer.observe(el));
+</script>
+</body>
+</html>
